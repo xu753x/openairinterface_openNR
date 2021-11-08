@@ -526,7 +526,7 @@ uint32_t pullarray8(uint8_t **in, uint8_t out[], uint32_t max_len, uint32_t len,
 		return 0;
 	}
 
-	if((end - out) >= sizeof(uint8_t) * len)
+	if((end - (*in)) >= sizeof(uint8_t) * len)
 	{
 		memcpy(out, (*in), len);
 		(*in)+=len;
@@ -712,7 +712,7 @@ int unpack_tlv_list(unpack_tlv_t unpack_fns[], uint16_t size, uint8_t **ppReadPa
 
 		for(idx = 0; idx < size; ++idx)
 		{
-			if(unpack_fns[idx].tag == generic_tl.tag)
+			if(unpack_fns[idx].tag == generic_tl.tag) // match the extracted tag value with all the tags in unpack_fn list
 			{
 				tagMatch = 1;
 				nfapi_tl_t* tl = (nfapi_tl_t*)(unpack_fns[idx].tlv);

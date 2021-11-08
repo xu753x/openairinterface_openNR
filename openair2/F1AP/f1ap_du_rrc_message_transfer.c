@@ -143,7 +143,7 @@ int DU_handle_DL_RRC_MESSAGE_TRANSFER(instance_t       instance,
   // BK: need check
   // create an ITTI message and copy SDU
 
-  //  message_p = itti_alloc_new_message (TASK_CU_F1, RRC_MAC_CCCH_DATA_IND);
+  //  message_p = itti_alloc_new_message (TASK_CU_F1, 0, RRC_MAC_CCCH_DATA_IND);
   //  memset (RRC_MAC_CCCH_DATA_IND (message_p).sdu, 0, CCCH_SDU_SIZE);
   rrc_dl_sdu_len = ie->value.choice.RRCContainer.size;
   //  memcpy(RRC_MAC_CCCH_DATA_IND (message_p).sdu, ie->value.choice.RRCContainer.buf,
@@ -255,10 +255,8 @@ int DU_handle_DL_RRC_MESSAGE_TRANSFER(instance_t       instance,
           SRB_configList,
           (LTE_DRB_ToAddModList_t*) NULL,
           (LTE_DRB_ToReleaseList_t*) NULL
-#if (LTE_RRC_VERSION >= MAKE_VERSION(9, 0, 0))
           , (LTE_PMCH_InfoList_r9_t *) NULL,
           0,0
-#   endif
           );
 
       // This should be somewhere in the f1ap_cudu_ue_inst_t
@@ -283,21 +281,14 @@ int DU_handle_DL_RRC_MESSAGE_TRANSFER(instance_t       instance,
       rrc_mac_config_req_eNB(
           ctxt.module_id,
           0, //primaryCC_id,
-          0,0,0,0,0,
-#if (LTE_RRC_VERSION >= MAKE_VERSION(14, 0, 0))
-          0,
-#endif
+          0,0,0,0,0,0,
           ctxt.rnti,
           (LTE_BCCH_BCH_Message_t *) NULL,
           (LTE_RadioResourceConfigCommonSIB_t *) NULL,
-#if (LTE_RRC_VERSION >= MAKE_VERSION(14, 0, 0))
           (LTE_RadioResourceConfigCommonSIB_t *) NULL,
-#endif
           radioResourceConfigDedicated->physicalConfigDedicated,
-#if (LTE_RRC_VERSION >= MAKE_VERSION(10, 0, 0))
           (LTE_SCellToAddMod_r10_t *)NULL,
           //(struct PhysicalConfigDedicatedSCell_r10 *)NULL,
-#endif
           (LTE_MeasObjectToAddMod_t **) NULL,
           mac_MainConfig,
           1,
@@ -307,22 +298,16 @@ int DU_handle_DL_RRC_MESSAGE_TRANSFER(instance_t       instance,
           NULL,
           (LTE_SchedulingInfoList_t *) NULL,
           0, NULL, NULL, (LTE_MBSFN_SubframeConfigList_t *) NULL
-#if (LTE_RRC_VERSION >= MAKE_VERSION(9, 0, 0))
-          , 0, (LTE_MBSFN_AreaInfoList_r9_t *) NULL, (LTE_PMCH_InfoList_r9_t *) NULL
-#endif
-#if (LTE_RRC_VERSION >= MAKE_VERSION(13, 0, 0))
-          ,
+          , 0, (LTE_MBSFN_AreaInfoList_r9_t *) NULL, (LTE_PMCH_InfoList_r9_t *) NULL,
           (LTE_SystemInformationBlockType1_v1310_IEs_t *)NULL
-#endif
-#if (LTE_RRC_VERSION >= MAKE_VERSION(14, 0, 0))
                         ,
                         0,
                         (LTE_BCCH_DL_SCH_Message_MBMS_t *) NULL,
                         (LTE_SchedulingInfo_MBMS_r14_t *) NULL,
                         (struct LTE_NonMBSFN_SubframeConfig_r14 *) NULL,
                         (LTE_SystemInformationBlockType1_MBMS_r14_t *) NULL,
-                        (LTE_MBSFN_AreaInfoList_r9_t *) NULL
-#endif
+                        (LTE_MBSFN_AreaInfoList_r9_t *) NULL,
+                        (LTE_MBSFNAreaConfiguration_r9_t*) NULL
           );
           break;
       } // case
@@ -417,7 +402,7 @@ int DU_handle_DL_RRC_MESSAGE_TRANSFER(instance_t       instance,
                   MessageDef *message_p = NULL;
 
                   /* Send DRX configuration to MAC task to configure timers of local UE context */
-                  message_p = itti_alloc_new_message(TASK_DU_F1, RRC_MAC_DRX_CONFIG_REQ);
+                  message_p = itti_alloc_new_message(TASK_DU_F1, 0, RRC_MAC_DRX_CONFIG_REQ);
                   RRC_MAC_DRX_CONFIG_REQ(message_p).rnti = ctxt.rnti;
                   RRC_MAC_DRX_CONFIG_REQ(message_p).drx_Configuration = mac_MainConfig->drx_Config;
                   itti_send_msg_to_task(TASK_MAC_ENB, ctxt.module_id, message_p);
@@ -432,11 +417,7 @@ int DU_handle_DL_RRC_MESSAGE_TRANSFER(instance_t       instance,
                 &ctxt,
                 SRB_configList, // NULL,  //LG-RK 14/05/2014 SRB_configList,
                 DRB_configList,
-                DRB_ReleaseList
-      #if (LTE_RRC_VERSION >= MAKE_VERSION(9, 0, 0))
-                , (LTE_PMCH_InfoList_r9_t *) NULL
-                , 0, 0
-      #endif
+                DRB_ReleaseList, (LTE_PMCH_InfoList_r9_t *) NULL, 0, 0
                 );
 
               if (SRB_configList != NULL) {
@@ -476,20 +457,14 @@ int DU_handle_DL_RRC_MESSAGE_TRANSFER(instance_t       instance,
                     rrc_mac_config_req_eNB(
                       ctxt.module_id,
                       0,0,0,0,0,0,
-        #if (LTE_RRC_VERSION >= MAKE_VERSION(14, 0, 0))
                    0,
-        #endif
                    ue_context_p->ue_context.rnti,
                    (LTE_BCCH_BCH_Message_t *) NULL,
                    (LTE_RadioResourceConfigCommonSIB_t *) NULL,
-        #if (LTE_RRC_VERSION >= MAKE_VERSION(14, 0, 0))
                    (LTE_RadioResourceConfigCommonSIB_t *) NULL,
-        #endif
                    physicalConfigDedicated,
-        #if (LTE_RRC_VERSION >= MAKE_VERSION(10, 0, 0))
                    (LTE_SCellToAddMod_r10_t *)NULL,
                    //(struct PhysicalConfigDedicatedSCell_r10 *)NULL,
-        #endif
                    (LTE_MeasObjectToAddMod_t **) NULL,
                    mac_MainConfig,
                    DRB2LCHAN[i],
@@ -499,22 +474,15 @@ int DU_handle_DL_RRC_MESSAGE_TRANSFER(instance_t       instance,
                    NULL,
                    (LTE_SchedulingInfoList_t *) NULL,
                    0, NULL, NULL, (LTE_MBSFN_SubframeConfigList_t *) NULL
-        #if (LTE_RRC_VERSION >= MAKE_VERSION(9, 0, 0))
-                   , 0, (LTE_MBSFN_AreaInfoList_r9_t *) NULL, (LTE_PMCH_InfoList_r9_t *) NULL
-        #endif
-        #if (LTE_RRC_VERSION >= MAKE_VERSION(13, 0, 0))
-                   ,
-                   (LTE_SystemInformationBlockType1_v1310_IEs_t *)NULL
-        #endif
-	#if (LTE_RRC_VERSION >= MAKE_VERSION(14, 0, 0))
-                         ,
+                   , 0, (LTE_MBSFN_AreaInfoList_r9_t *) NULL, (LTE_PMCH_InfoList_r9_t *) NULL,
+                   (LTE_SystemInformationBlockType1_v1310_IEs_t *)NULL,
                          0,
                          (LTE_BCCH_DL_SCH_Message_MBMS_t *) NULL,
                          (LTE_SchedulingInfo_MBMS_r14_t *) NULL,
                          (struct LTE_NonMBSFN_SubframeConfig_r14 *) NULL,
                          (LTE_SystemInformationBlockType1_MBMS_r14_t *) NULL,
-                         (LTE_MBSFN_AreaInfoList_r9_t *) NULL
-        #endif
+                         (LTE_MBSFN_AreaInfoList_r9_t *) NULL,
+                         (LTE_MBSFNAreaConfiguration_r9_t*) NULL
                    );
                   }
 
@@ -538,16 +506,11 @@ int DU_handle_DL_RRC_MESSAGE_TRANSFER(instance_t       instance,
         LOG_I(F1AP, "Received ueCapabilityEnquiry\n");
           break;
       case LTE_DL_DCCH_MessageType__c1_PR_counterCheck:
-  #if (LTE_RRC_VERSION >= MAKE_VERSION(10, 0, 0))
       case LTE_DL_DCCH_MessageType__c1_PR_loggedMeasurementConfiguration_r10:
       case LTE_DL_DCCH_MessageType__c1_PR_rnReconfiguration_r10:
-  #endif
       case LTE_DL_DCCH_MessageType__c1_PR_spare1:
       case LTE_DL_DCCH_MessageType__c1_PR_spare2:
       case LTE_DL_DCCH_MessageType__c1_PR_spare3:
-  #if (LTE_RRC_VERSION < MAKE_VERSION(14, 0, 0))
-      case LTE_DL_DCCH_MessageType__c1_PR_spare4:
-  #endif
   	    break;
       case LTE_DL_DCCH_MessageType__c1_PR_ueInformationRequest_r9:
         LOG_I(F1AP, "Received ueInformationRequest_r9\n");
@@ -579,6 +542,7 @@ int DU_handle_DL_RRC_MESSAGE_TRANSFER(instance_t       instance,
   if (pdcp_pdu_p != NULL) {
     memset(pdcp_pdu_p->data, 0, rrc_dl_sdu_len);
     memcpy(&pdcp_pdu_p->data[0], ie->value.choice.RRCContainer.buf, rrc_dl_sdu_len);
+
       rlc_status = rlc_data_req(&ctxt
                                 , 1
                                 , MBMS_FLAG_NO
@@ -587,10 +551,8 @@ int DU_handle_DL_RRC_MESSAGE_TRANSFER(instance_t       instance,
                                 , 0
                                 , rrc_dl_sdu_len
                                 , pdcp_pdu_p
-#ifdef Rel14
                                 ,NULL
                                 ,NULL
-#endif
                                 );
       switch (rlc_status) {
         case RLC_OP_STATUS_OK:
@@ -637,7 +599,7 @@ int DU_send_UL_RRC_MESSAGE_TRANSFER(instance_t instance,
   uint32_t len;
 
 
-  LOG_I(F1AP, "[DU %d] %s: size %d UE RNTI %x in SRB %d\n",
+  LOG_I(F1AP, "[DU %ld] %s: size %d UE RNTI %x in SRB %d\n",
         instance, __func__, msg->rrc_container_length, rnti, msg->srb_id);
 
   //LOG_I(F1AP, "%s() RRCContainer size %d: ", __func__, msg->rrc_container_length);
@@ -737,7 +699,7 @@ int DU_send_UL_RRC_MESSAGE_TRANSFER(instance_t instance,
           break;
         }
         
-        UE_sched_ctrl_t *UE_scheduling_control = &(RC.mac[instance]->UE_list.UE_sched_ctrl[UE_id_mac]);
+        UE_sched_ctrl_t *UE_scheduling_control = &(RC.mac[instance]->UE_info.UE_sched_ctrl[UE_id_mac]);
         
         if (UE_scheduling_control->cdrx_waiting_ack == TRUE) {
           UE_scheduling_control->cdrx_waiting_ack = FALSE;
@@ -784,15 +746,12 @@ int DU_send_UL_RRC_MESSAGE_TRANSFER(instance_t instance,
       case LTE_UL_DCCH_MessageType__c1_PR_counterCheckResponse:
         break;
 
-#if (LTE_RRC_VERSION >= MAKE_VERSION(9, 0, 0))
-
       case LTE_UL_DCCH_MessageType__c1_PR_ueInformationResponse_r9:
         break;
+
       case LTE_UL_DCCH_MessageType__c1_PR_proximityIndication_r9:
        break;
-#endif
 
-#if (LTE_RRC_VERSION >= MAKE_VERSION(10, 0, 0))
       case LTE_UL_DCCH_MessageType__c1_PR_rnReconfigurationComplete_r10:
         break;
 
@@ -801,8 +760,6 @@ int DU_send_UL_RRC_MESSAGE_TRANSFER(instance_t instance,
 
       case LTE_UL_DCCH_MessageType__c1_PR_interFreqRSTDMeasurementIndication_r10:
        break;
-#endif
-
       }
     }
   }

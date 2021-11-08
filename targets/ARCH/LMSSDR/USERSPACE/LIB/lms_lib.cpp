@@ -178,7 +178,7 @@ int trx_lms_start(openair0_device *device){
     }
 
     LMS_Init(lms_device);
-    LMS_EnableCalibCache(lms_device,false);
+    ///LMS_EnableCache(lms_device,false);
 
     if (LMS_LoadConfig(lms_device,device->openair0_cfg[0].configFilename) != 0)
     {
@@ -277,6 +277,7 @@ int trx_lms_stop(openair0_device *device) {
     LMS_DestroyStream(lms_device,&rx_stream);
     LMS_DestroyStream(lms_device,&tx_stream);
     LMS_Close(lms_device);
+    return 0;
 }
 
 /*! \brief Set frequencies (TX/RX)
@@ -349,6 +350,10 @@ void trx_lms_end(openair0_device *device) {
 
 }
 
+int trx_lms_write_init(openair0_device *device)
+{
+    return 0;
+}
 extern "C" {
 /*! \brief Initialize Openair LMSSDR target. It returns 0 if OK
 * \param device the hardware to use
@@ -361,6 +366,11 @@ int device_init(openair0_device *device, openair0_config_t *openair0_cfg){
   printf("LMSSDR: Initializing openair0_device for %s ...\n", ((device->host_type == RAU_HOST) ? "RAU": "RRU"));
 
   switch ((int)openair0_cfg[0].sample_rate) {
+  case 61440000:
+    openair0_cfg[0].samples_per_packet    = 2048;
+    openair0_cfg[0].tx_sample_advance     = 40;
+    openair0_cfg[0].tx_bw                 = 61.44e6;
+    openair0_cfg[0].rx_bw                 = 61.44e6;
   case 30720000:
     // from usrp_time_offset
     openair0_cfg[0].samples_per_packet    = 2048;
@@ -405,6 +415,7 @@ int device_init(openair0_device *device, openair0_config_t *openair0_cfg){
   device->trx_stop_func = trx_lms_stop;
   device->trx_set_freq_func = trx_lms_set_freq;
   device->trx_set_gains_func = trx_lms_set_gains;
+  device->trx_write_init = trx_lms_write_init;
 
   device->openair0_cfg = openair0_cfg;
 

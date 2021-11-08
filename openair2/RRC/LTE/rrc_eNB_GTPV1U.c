@@ -27,7 +27,6 @@
  * \email: lionel.gauthier@eurecom.fr
  */
 
-//#if defined(ENABLE_USE_MME)
 # include "rrc_defs.h"
 # include "rrc_extern.h"
 # include "RRC/LTE/MESSAGES/asn1_msg.h"
@@ -35,10 +34,10 @@
 # include "rrc_eNB_UE_context.h"
 # include "msc.h"
 
-//# if defined(ENABLE_ITTI)
-#   include "asn1_conversions.h"
-#   include "intertask_interface.h"
-//#endif
+
+#include "asn1_conversions.h"
+#include "intertask_interface.h"
+
 
 # include "common/ran_context.h"
 
@@ -93,6 +92,7 @@ rrc_eNB_process_GTPV1U_CREATE_TUNNEL_RESP(
   }
 }
 
+
 //------------------------------------------------------------------------------
 boolean_t
 gtpv_data_req(
@@ -112,8 +112,7 @@ gtpv_data_req(
     LOG_I(GTPU,"gtpv_data_req sdu_sizeP == 0");
     return FALSE;
   }
-  LOG_D(GTPU,"gtpv_data_req ue rnti %x sdu_sizeP %d rb id %d", ctxt_pP->rnti, sdu_sizeP, rb_idP);
-#if defined(ENABLE_ITTI)
+  LOG_D(GTPU,"gtpv_data_req ue rnti %x sdu_sizeP %d rb id %ld", ctxt_pP->rnti, sdu_sizeP, rb_idP);
   {
     MessageDef *message_p;
     // Uses a new buffer to avoid issue with PDCP buffer content that could be changed by PDCP (asynchronous message handling).
@@ -127,7 +126,7 @@ gtpv_data_req(
 
       memcpy (message_buffer, buffer_pP, sdu_sizeP);
 
-      message_p = itti_alloc_new_message (TASK_GTPV1_U, GTPV1U_ENB_DATA_FORWARDING_IND);
+      message_p = itti_alloc_new_message (TASK_GTPV1_U, 0, GTPV1U_ENB_DATA_FORWARDING_IND);
       GTPV1U_ENB_DATA_FORWARDING_IND (message_p).frame 	= ctxt_pP->frame;
       GTPV1U_ENB_DATA_FORWARDING_IND (message_p).enb_flag	= ctxt_pP->enb_flag;
       GTPV1U_ENB_DATA_FORWARDING_IND (message_p).rb_id 	= rb_idP;
@@ -150,7 +149,7 @@ gtpv_data_req(
 
       memcpy (message_buffer, buffer_pP, sdu_sizeP);
 
-      message_p = itti_alloc_new_message (TASK_GTPV1_U, GTPV1U_ENB_END_MARKER_IND);
+      message_p = itti_alloc_new_message (TASK_GTPV1_U, 0, GTPV1U_ENB_END_MARKER_IND);
       GTPV1U_ENB_END_MARKER_IND (message_p).frame 	= ctxt_pP->frame;
       GTPV1U_ENB_END_MARKER_IND (message_p).enb_flag	= ctxt_pP->enb_flag;
       GTPV1U_ENB_END_MARKER_IND (message_p).rb_id 	= rb_idP;
@@ -167,8 +166,6 @@ gtpv_data_req(
       return TRUE; // TODO should be changed to a CNF message later, currently RRC lite does not used the returned value anyway.
     }
   }
-#endif
-
   return TRUE;
 
 }
@@ -189,9 +186,10 @@ void rrc_eNB_send_GTPV1U_ENB_DELETE_TUNNEL_REQ(
                      "0 GTPV1U_ENB_DELETE_TUNNEL_REQ rnti %x ",
                      ue_context_pP->ue_context.eNB_ue_s1ap_id);
 
-  MessageDef *msg = itti_alloc_new_message(TASK_RRC_ENB, GTPV1U_ENB_DELETE_TUNNEL_REQ);
+  MessageDef *msg = itti_alloc_new_message(TASK_RRC_ENB, 0, GTPV1U_ENB_DELETE_TUNNEL_REQ);
   memset(&GTPV1U_ENB_DELETE_TUNNEL_REQ(msg), 0, sizeof(GTPV1U_ENB_DELETE_TUNNEL_REQ(msg)));
   GTPV1U_ENB_DELETE_TUNNEL_REQ(msg).rnti = ue_context_pP->ue_context.rnti;
+  GTPV1U_ENB_DELETE_TUNNEL_REQ(msg).from_gnb = 0;
   GTPV1U_ENB_DELETE_TUNNEL_REQ(msg).num_erab = ue_context_pP->ue_context.nb_of_e_rabs;
   for (int e_rab = 0; e_rab < ue_context_pP->ue_context.nb_of_e_rabs; e_rab++) {
     const rb_id_t gtp_ebi = ue_context_pP->ue_context.enb_gtp_ebi[e_rab];

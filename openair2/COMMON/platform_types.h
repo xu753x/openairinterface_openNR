@@ -28,10 +28,13 @@
 
  ***************************************************************************/
 #ifndef __PLATFORM_TYPES_H__
-#    define __PLATFORM_TYPES_H__
+#define __PLATFORM_TYPES_H__
 
 #if !defined(NAS_NETLINK)
-  #include <stdint.h>
+#include <stdint.h>
+#else
+#include <linux/types.h>
+typedef void * intptr_t;
 #endif
 
 //-----------------------------------------------------------------------------
@@ -65,13 +68,14 @@ typedef int32_t               sdu_size_t;
 typedef uint32_t              frame_t;
 typedef int32_t               sframe_t;
 typedef uint32_t              sub_frame_t;
+typedef uint32_t              slot_t;
 typedef uint16_t              module_id_t;
 typedef uint8_t               slice_id_t;
 typedef uint8_t               eNB_index_t;
 typedef uint16_t              ue_id_t;
 typedef int16_t               smodule_id_t;
-typedef uint16_t              rb_id_t;
-typedef uint16_t              srb_id_t;
+typedef long              rb_id_t;
+typedef long              srb_id_t;
 
 typedef boolean_t             MBMS_flag_t;
 #define  MBMS_FLAG_NO         FALSE
@@ -80,6 +84,10 @@ typedef boolean_t             MBMS_flag_t;
 typedef boolean_t             eNB_flag_t;
 #define  ENB_FLAG_NO          FALSE
 #define  ENB_FLAG_YES         TRUE
+
+typedef boolean_t             gNB_flag_t;
+#define  GNB_FLAG_NO          FALSE
+#define  GNB_FLAG_YES         TRUE
 
 typedef boolean_t             srb_flag_t;
 #define  SRB_FLAG_NO          FALSE
@@ -217,16 +225,14 @@ typedef enum config_action_e {
 //-----------------------------------------------------------------------------
 typedef uint32_t           teid_t; // tunnel endpoint identifier
 typedef uint8_t            ebi_t;  // eps bearer id
-
+typedef uint8_t            pdusessionid_t;
 
 
 //-----------------------------------------------------------------------------
 //
 //-----------------------------------------------------------------------------
 // may be ITTI not enabled, but type instance is useful also for OTG,
-#if !defined(instance_t)
-  typedef uint16_t instance_t;
-#endif
+typedef intptr_t instance_t;
 typedef struct protocol_ctxt_s {
   module_id_t module_id;     /*!< \brief  Virtualized module identifier      */
   eNB_flag_t  enb_flag;      /*!< \brief  Flag to indicate eNB (1) or UE (0) */
@@ -246,6 +252,9 @@ typedef struct protocol_ctxt_s {
 #define UE_INSTANCE_TO_MODULE_ID( iNSTANCE ) iNSTANCE - NB_eNB_INST
 #define ENB_INSTANCE_TO_MODULE_ID( iNSTANCE )iNSTANCE
 
+//NR
+#define GNB_MODULE_ID_TO_INSTANCE( mODULE_iD ) mODULE_iD
+#define GNB_INSTANCE_TO_MODULE_ID( iNSTANCE )iNSTANCE
 
 #define MODULE_ID_TO_INSTANCE(mODULE_iD, iNSTANCE, eNB_fLAG) \
   if(eNB_fLAG == ENB_FLAG_YES) \
@@ -284,15 +293,28 @@ typedef struct protocol_ctxt_s {
   (Ctxt_Pp)->subframe  = sUBfRAME; \
   PROTOCOL_CTXT_COMPUTE_MODULE_ID(Ctxt_Pp)
 
-#define PROTOCOL_CTXT_FMT "[FRAME %05u][%s][MOD %02u][RNTI %" PRIx16 "]"
+#define PROTOCOL_CTXT_FMT "[FRAME %05u][%s][MOD %02d][RNTI %" PRIx16 "]"
 #define PROTOCOL_CTXT_ARGS(CTXT_Pp) \
   (CTXT_Pp)->frame, \
   ((CTXT_Pp)->enb_flag == ENB_FLAG_YES) ? "eNB":" UE", \
   (CTXT_Pp)->module_id, \
   (CTXT_Pp)->rnti
 
+#define PROTOCOL_NR_CTXT_ARGS(CTXT_Pp) \
+  (CTXT_Pp)->frame, \
+  ((CTXT_Pp)->enb_flag == GNB_FLAG_YES) ? "gNB":" UE", \
+  (CTXT_Pp)->module_id, \
+  (CTXT_Pp)->rnti
+
 #define CHECK_CTXT_ARGS(CTXT_Pp)
 
 #define exit_fun(msg) exit_function(__FILE__,__FUNCTION__,__LINE__,msg)
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 void exit_function(const char *file, const char *function, const int line, const char *s);
+#ifdef __cplusplus
+}
+#endif
 #endif

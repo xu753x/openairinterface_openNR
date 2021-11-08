@@ -117,7 +117,7 @@ int DU_send_F1_SETUP_REQUEST(instance_t instance) {
   ASN_SEQUENCE_ADD(&out->protocolIEs.list, ie);
 
   /* mandatory */
-  /* c2. GNB_DU_ID (integrer value) */
+  /* c2. GNB_DU_ID (integer value) */
   ie = (F1AP_F1SetupRequestIEs_t *)calloc(1, sizeof(F1AP_F1SetupRequestIEs_t));
   ie->id                        = F1AP_ProtocolIE_ID_id_gNB_DU_ID;
   ie->criticality               = F1AP_Criticality_reject;
@@ -138,7 +138,7 @@ int DU_send_F1_SETUP_REQUEST(instance_t instance) {
   }
 
   /* mandatory */
-  /* c4. serverd cells list */
+  /* c4. served cells list */
   ie = (F1AP_F1SetupRequestIEs_t *)calloc(1, sizeof(F1AP_F1SetupRequestIEs_t));
   ie->id                        = F1AP_ProtocolIE_ID_id_gNB_DU_Served_Cells_List;
   ie->criticality               = F1AP_Criticality_reject;
@@ -150,7 +150,7 @@ int DU_send_F1_SETUP_REQUEST(instance_t instance) {
        i<num_cells_available;
        i++) {
         /* mandatory */
-        /* 4.1 serverd cells item */
+        /* 4.1 served cells item */
 
         F1AP_GNB_DU_Served_Cells_ItemIEs_t *gnb_du_served_cell_list_item_ies;
         gnb_du_served_cell_list_item_ies = (F1AP_GNB_DU_Served_Cells_ItemIEs_t *)calloc(1, sizeof(F1AP_GNB_DU_Served_Cells_ItemIEs_t));
@@ -162,7 +162,7 @@ int DU_send_F1_SETUP_REQUEST(instance_t instance) {
         F1AP_GNB_DU_Served_Cells_Item_t gnb_du_served_cells_item;
         memset((void *)&gnb_du_served_cells_item, 0, sizeof(F1AP_GNB_DU_Served_Cells_Item_t));
 
-        /* 4.1.1 serverd cell Information */
+        /* 4.1.1 served cell Information */
         F1AP_Served_Cell_Information_t served_cell_information;
 
         memset((void *)&served_cell_information, 0, sizeof(F1AP_Served_Cell_Information_t));
@@ -444,7 +444,7 @@ int DU_handle_F1_SETUP_RESPONSE(instance_t instance,
    int num_cells_to_activate = 0;
    F1AP_Cells_to_be_Activated_List_Item_t *cell;
 
-   MessageDef *msg_p = itti_alloc_new_message (TASK_DU_F1, F1AP_SETUP_RESP);
+   MessageDef *msg_p = itti_alloc_new_message (TASK_DU_F1, 0, F1AP_SETUP_RESP);
 
    LOG_D(F1AP, "F1AP: F1Setup-Resp: protocolIEs.list.count %d\n",
          in->protocolIEs.list.count);

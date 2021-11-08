@@ -26,8 +26,9 @@
   EMAIL   : javier.morgade@ieee.org
 */
 
-#ifndef MME_CONFIG_H_
-#define MME_CONFIG_H_
+#ifndef __MME_APP_MME_CONFIG__H__
+#define __MME_APP_MME_CONFIG__H__
+
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -36,7 +37,7 @@
 #include "commonDef.h"
 #include "platform_types.h"
 #include "platform_constants.h"
-#include "PHY/impl_defs_lte.h"
+#include "PHY/impl_defs_top.h"
 #include "PHY/defs_eNB.h"
 #include "s1ap_messages_types.h"
 #include "f1ap_messages_types.h"
@@ -48,5 +49,5 @@
 
 int RCconfig_MME(void);
 
-#endif /* MME_CONFIG_H_ */
+#endif /* __MME_APP_MME_CONFIG__H__ */
 /** @} */

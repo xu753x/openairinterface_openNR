@@ -1,12 +1,12 @@
 /*
  * Copyright 2017 Cisco Systems, Inc.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,6 +19,7 @@
 #define _NFAPI_INTERFACE_H_
 
 #include "stddef.h"
+#include <stdint.h>
 
 // Constants - update based on implementation
 #define NFAPI_MAX_PHY_RF_INSTANCES 2
@@ -30,7 +31,7 @@
 // These may be changed if desired. They are used in the encoder to make sure 
 // that the user has not specified a 'count' larger than the max array, and also
 // used by the decoder when decode an array. If the 'count' received is larger
-// than the array it is to be stored in the decode fails. 
+// than the array it is to be stored in the decode fails.
 #define NFAPI_MAX_NUM_ANTENNAS 8
 #define NFAPI_MAX_NUM_SUBBANDS 13
 #define NFAPI_MAX_BF_VECTORS 8
@@ -74,6 +75,9 @@
 #define NFAPI_VERSION_3_0_11	0x000
 #define NFAPI_VERSION_3_0_12    0x001
 
+#define NFAPI_HALF_FRAME_INDEX_FIRST_HALF 0
+#define NFAPI_HALF_FRAME_INDEX_SECOND_HALF 1
+
 // The IANA agreed port definition of the P5 SCTP VNF enpoint 
 // http://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xhtml?search=7701
 #define NFAPI_P5_SCTP_PORT		7701
@@ -115,6 +119,17 @@ typedef struct {
 	uint16_t length;
 } nfapi_tl_t;
 #define NFAPI_TAG_LENGTH_PACKED_LEN 4
+
+// Convenience methods to convert between SFN/SLOT formats
+#define NFAPI_SFNSLOT2DEC(_sfn,_slot) ( _sfn*20 + _slot  )  // total count of slots
+#define NFAPI_SFNSLOTDEC2SFNSLOT(_sfnslot_dec) ((((_sfnslot_dec) / 20) << 4) | (((_sfnslot_dec) - (((_sfnslot_dec) / 20) * 10)) & 0x3F))
+
+#define NFAPI_SFNSLOT2SFN(_sfnslot) ((_sfnslot) >> 6)
+#define NFAPI_SFNSLOT2SLOT(_sfnslot) ((_sfnslot) & 0x3F)
+#define NFAPI_SFNSLOTDEC2SFN(_sfnslot_dec) ((_sfnslot_dec) / 20)
+#define NFAPI_SFNSLOTDEC2SLOT(_sfnslot_dec) ((_sfnslot_dec) % 20)
+
+#define NFAPI_MAX_SFNSLOTDEC 1024*20 // 20 is for numerology 1
 
 // Convenience methods to convert between SFN/SFN formats
 #define NFAPI_SFNSF2DEC(_sfnsf) ((((_sfnsf) >> 4) * 10) + ((_sfnsf) & 0xF))
@@ -171,7 +186,6 @@ typedef enum {
 	NFAPI_UL_NODE_SYNC = 0x0180,
 	NFAPI_DL_NODE_SYNC,
 	NFAPI_TIMING_INFO,
-
 
 	NFAPI_RSSI_REQUEST = 0x0200,
 	NFAPI_RSSI_RESPONSE,
@@ -340,7 +354,8 @@ typedef enum {
 	NFAPI_3GPP_REL_SUPPORTED_9 = 1,
 	NFAPI_3GPP_REL_SUPPORTED_10 = 2,
 	NFAPI_3GPP_REL_SUPPORTED_11 = 4,
-	NFAPI_3GPP_REL_SUPPORTED_12 = 8
+	NFAPI_3GPP_REL_SUPPORTED_12 = 8,
+  NFAPI_3GPP_REL_SUPPORTED_15 = 64
 } nfapi_3gpp_release_supported_e;
 
 
@@ -359,7 +374,8 @@ typedef enum {
 	NFAPI_RAT_TYPE_LTE = 0,
 	NFAPI_RAT_TYPE_UTRAN = 1,
 	NFAPI_RAT_TYPE_GERAN = 2,
-	NFAPI_RAT_TYPE_NB_IOT = 3
+	NFAPI_RAT_TYPE_NB_IOT = 3,
+  NFAPI_RAT_TYPE_NR = 4
 } nfapi_rat_type_e;
 
 typedef enum {
@@ -536,6 +552,16 @@ typedef struct {
 } nfapi_pnf_phy_rel13_nb_iot_t;
 #define NFAPI_PNF_PHY_REL13_NB_IOT_TAG 0x100E
 
+typedef struct {
+  uint16_t phy_config_index;
+} nfapi_pnf_phy_rel15_info_t;
+
+typedef struct {
+  nfapi_tl_t tl;
+  uint16_t number_of_phys;
+  nfapi_pnf_phy_rel15_info_t phy[NFAPI_MAX_PNF_PHY];
+} nfapi_pnf_phy_rel15_t;
+#define NFAPI_PNF_PHY_REL15_TAG 0x100H
 
 
 typedef struct {
@@ -571,6 +597,26 @@ typedef struct {
 #define NFAPI_PNF_PHY_RF_TAG 0x1003
 
 // Generic strucutre for single tlv value.
+typedef struct {
+	nfapi_tl_t tl;
+	int32_t value;
+} nfapi_int32_tlv_t;
+
+typedef struct {
+	nfapi_tl_t tl;
+	uint32_t value;
+} nfapi_uint32_tlv_t;
+
+typedef struct {
+	nfapi_tl_t tl;
+	int64_t value;
+} nfapi_int64_tlv_t;
+
+typedef struct {
+	nfapi_tl_t tl;
+	uint64_t value;
+} nfapi_uint64_tlv_t;
+
 typedef struct {
 	nfapi_tl_t tl;
 	uint16_t value;
@@ -621,6 +667,7 @@ typedef struct {
 #define NFAPI_L23_CONFIG_SFNSF_TAG 0x00F1
 
 typedef struct {
+  nfapi_uint16_tlv_t numerology_index_mu;
 	nfapi_uint16_tlv_t duplex_mode;
 	nfapi_uint16_tlv_t pcfich_power_offset;
 	nfapi_uint16_tlv_t pb;
@@ -633,6 +680,7 @@ typedef struct {
 #define NFAPI_SUBFRAME_CONFIG_PB_TAG 0x0003
 #define NFAPI_SUBFRAME_CONFIG_DL_CYCLIC_PREFIX_TYPE_TAG 0x0004
 #define NFAPI_SUBFRAME_CONFIG_UL_CYCLIC_PREFIX_TYPE_TAG 0x0005
+#define NFAPI_SUBFRAME_CONFIG_NUMEROLOGY_INDEX_MU_TAG 0x0006
 
 typedef struct {
 	nfapi_uint16_tlv_t dl_channel_bandwidth;
@@ -658,15 +706,28 @@ typedef struct {
 #define NFAPI_PHICH_CONFIG_PHICH_DURATION_TAG 0x0015
 #define NFAPI_PHICH_CONFIG_PHICH_POWER_OFFSET_TAG 0x0016
 
+
 typedef struct {
 	nfapi_uint16_tlv_t primary_synchronization_signal_epre_eprers;
 	nfapi_uint16_tlv_t secondary_synchronization_signal_epre_eprers;
 	nfapi_uint16_tlv_t physical_cell_id;
+  nfapi_uint16_tlv_t half_frame_index;
+  nfapi_uint16_tlv_t ssb_subcarrier_offset;
+  nfapi_uint16_tlv_t ssb_position_in_burst;
+  nfapi_uint16_tlv_t ssb_periodicity;
+  nfapi_uint16_tlv_t ss_pbch_block_power;
+  nfapi_uint16_tlv_t n_ssb_crb;
 } nfapi_sch_config_t;
 
 #define NFAPI_SCH_CONFIG_PRIMARY_SYNCHRONIZATION_SIGNAL_EPRE_EPRERS_TAG 0x001E
 #define NFAPI_SCH_CONFIG_SECONDARY_SYNCHRONIZATION_SIGNAL_EPRE_EPRERS_TAG 0x001F
 #define NFAPI_SCH_CONFIG_PHYSICAL_CELL_ID_TAG 0x0020
+#define NFAPI_SCH_CONFIG_HALF_FRAME_INDEX_TAG 0x0021
+#define NFAPI_SCH_CONFIG_SSB_SUBCARRIER_OFFSET_TAG 0x0022
+#define NFAPI_SCH_CONFIG_SSB_POSITION_IN_BURST 0x0023
+#define NFAPI_SCH_CONFIG_SSB_PERIODICITY 0x0024
+#define NFAPI_SCH_CONFIG_SS_PBCH_BLOCK_POWER 0x0025
+#define NFAPI_SCH_CONFIG_N_SSB_CRB 0x0025
 
 typedef struct {
 	nfapi_uint16_tlv_t configuration_index;
@@ -1069,11 +1130,13 @@ typedef struct {
 	nfapi_pnf_phy_rel12_t pnf_phy_rel12;
 	nfapi_pnf_phy_rel13_t pnf_phy_rel13;
 	nfapi_pnf_phy_rel13_nb_iot_t pnf_phy_rel13_nb_iot;
+  nfapi_pnf_phy_rel15_t pnf_phy_rel15;
 	nfapi_vendor_extension_tlv_t vendor_extension;
 } nfapi_pnf_param_response_t;
 
 typedef struct {
 	nfapi_p4_p5_message_header_t header;
+	uint8_t num_tlvs;
 	nfapi_pnf_phy_rf_config_t pnf_phy_rf_config;
 	nfapi_vendor_extension_tlv_t vendor_extension;
 } nfapi_pnf_config_request_t;
@@ -2434,7 +2497,7 @@ typedef struct {
 typedef struct {
 	nfapi_p7_message_header_t header;
 	uint32_t t1;
-	int32_t delta_sfn_sf;
+	int32_t delta_sfn_sf;	
 	nfapi_vendor_extension_tlv_t vendor_extension;
 } nfapi_dl_node_sync_t;
 
@@ -2449,21 +2512,49 @@ typedef struct {
 typedef struct {
 	nfapi_p7_message_header_t header;
 	uint32_t last_sfn_sf;
+
 	uint32_t time_since_last_timing_info;
 	uint32_t dl_config_jitter;
 	uint32_t tx_request_jitter;
 	uint32_t ul_config_jitter;
 	uint32_t hi_dci0_jitter;
+
 	int32_t dl_config_latest_delay;
 	int32_t tx_request_latest_delay;
 	int32_t ul_config_latest_delay;
 	int32_t hi_dci0_latest_delay;
+
 	int32_t dl_config_earliest_arrival;
 	int32_t tx_request_earliest_arrival;
 	int32_t ul_config_earliest_arrival;
 	int32_t hi_dci0_earliest_arrival;
+	
 	nfapi_vendor_extension_tlv_t vendor_extension;
 } nfapi_timing_info_t;
+
+typedef struct {
+	nfapi_p7_message_header_t header;
+	
+	uint32_t last_sfn;
+	uint32_t last_slot;
+	uint32_t time_since_last_timing_info;
+	
+	uint32_t dl_tti_jitter;
+	uint32_t tx_data_request_jitter;
+	uint32_t ul_tti_jitter;
+	uint32_t ul_dci_jitter;
+
+	int32_t dl_tti_latest_delay;
+	int32_t tx_data_request_latest_delay;
+	int32_t ul_tti_latest_delay;
+	int32_t ul_dci_latest_delay;
+	
+	int32_t dl_tti_earliest_arrival;
+	int32_t tx_data_request_earliest_arrival;
+	int32_t ul_tti_earliest_arrival;
+	int32_t ul_dci_earliest_arrival;
+	nfapi_vendor_extension_tlv_t vendor_extension;
+} nfapi_nr_timing_info_t;
 
 typedef struct {
 	nfapi_tl_t tl;
@@ -3621,6 +3712,50 @@ typedef struct {
 	nfapi_vendor_extension_tlv_t vendor_extension;
 } nfapi_nmm_stop_response_t;
 
+typedef struct
+{
+  // TODO: see if this needs to be uncommented
+
+  // These TLVs are used to setup the transport connection between VNF and PNF
+  nfapi_ipv4_address_t p7_vnf_address_ipv4;
+  nfapi_ipv6_address_t p7_vnf_address_ipv6;
+  nfapi_uint16_tlv_t p7_vnf_port;
+
+  nfapi_ipv4_address_t p7_pnf_address_ipv4;
+  nfapi_ipv6_address_t p7_pnf_address_ipv6;
+  nfapi_uint16_tlv_t p7_pnf_port;
+
+  nfapi_uint8_tlv_t timing_window; //Value: 0 → 30,000 microseconds 
+  nfapi_uint8_tlv_t timing_info_mode;
+  nfapi_uint8_tlv_t timing_info_period;
+
+  nfapi_uint32_tlv_t dl_tti_timing_offset;
+  nfapi_uint32_tlv_t ul_tti_timing_offset;
+  nfapi_uint32_tlv_t ul_dci_timing_offset;
+  nfapi_uint32_tlv_t tx_data_timing_offset;
+  
+   // These TLVs are used to setup the transport connection between VNF and PNF
+  /*
+  nfapi_uint8_tlv_t dl_ue_per_sf;
+  nfapi_uint8_tlv_t ul_ue_per_sf;
+
+  // These TLVs are used by PNF to report its RF capabilities to the VNF software
+  nfapi_rf_bands_t rf_bands;
+*/
+  // These TLVs are used by the VNF to configure the synchronization with the PNF.
+ 
+
+  // These TLVs are used by the VNF to configure the RF in the PNF
+  //nfapi_uint16_tlv_t max_transmit_power;
+  //nfapi_uint32_tlv_t nrarfcn;
+
+  // nfapi_nmm_frequency_bands_t nmm_gsm_frequency_bands;
+  // nfapi_nmm_frequency_bands_t nmm_umts_frequency_bands;
+  // nfapi_nmm_frequency_bands_t nmm_lte_frequency_bands;
+  // nfapi_uint8_tlv_t nmm_uplink_rssi_supported;
+
+} nfapi_nr_nfapi_t;
+
 //
 // Configuration options for the encode decode functions
 //
@@ -3832,6 +3967,7 @@ int nfapi_p4_message_unpack(void *pMessageBuf, uint32_t messageBufLen, void *pUn
  * 
  */
 int nfapi_p5_message_pack(void *pMessageBuf, uint32_t messageBufLen, void *pPackedBuf, uint32_t packedBufLen, nfapi_p4_p5_codec_config_t* config);
+int nfapi_nr_p5_message_pack(void *pMessageBuf, uint32_t messageBufLen, void *pPackedBuf, uint32_t packedBufLen, nfapi_p4_p5_codec_config_t* config);
 
 /*! \brief Decodes an NFAPI P5 message header
  *  \param pMessageBuf A pointer to an encoded P5 message header
@@ -3855,6 +3991,7 @@ int nfapi_p5_message_header_unpack(void *pMessageBuf, uint32_t messageBufLen, vo
  *
  * The function will decode a byte stream pointed to by pMessageBuf into a nfapi p5 message structure pointer to by pUnpackedBuf 
  */
+int nfapi_nr_p5_message_unpack(void *pMessageBuf, uint32_t messageBufLen, void *pUnpackedBuf, uint32_t unpackedBufLen, nfapi_p4_p5_codec_config_t* config);
 int nfapi_p5_message_unpack(void *pMessageBuf, uint32_t messageBufLen, void *pUnpackedBuf, uint32_t unpackedBufLen, nfapi_p4_p5_codec_config_t* config);
 
 /*! \brief Encodes an NFAPI P7 message to a buffer
@@ -3868,6 +4005,7 @@ int nfapi_p5_message_unpack(void *pMessageBuf, uint32_t messageBufLen, void *pUn
  * 
  */
 int nfapi_p7_message_pack(void *pMessageBuf, void *pPackedBuf, uint32_t packedBufLen, nfapi_p7_codec_config_t* config);
+int nfapi_nr_p7_message_pack(void *pMessageBuf, void *pPackedBuf, uint32_t packedBufLen, nfapi_p7_codec_config_t* config);
 
 /*! \brief Decodes an NFAPI P7 message header
  *  \param pMessageBuf A pointer to an encoded P7 message header
@@ -3893,6 +4031,7 @@ int nfapi_p7_message_header_unpack(void *pMessageBuf, uint32_t messageBufLen, vo
  * The function will decode a byte stream pointed to by pMessageBuf into a nfapi p7 message structure pointer to by pUnpackedBuf 
  */
 int nfapi_p7_message_unpack(void *pMessageBuf, uint32_t messageBufLen, void *pUnpackedBuf, uint32_t unpackedBufLen, nfapi_p7_codec_config_t* config);
+int nfapi_nr_p7_message_unpack(void *pMessageBuf, uint32_t messageBufLen, void *pUnpackedBuf, uint32_t unpackedBufLen, nfapi_p7_codec_config_t* config);
 
 /*! \brief Calculates the checksum of a  message
  *

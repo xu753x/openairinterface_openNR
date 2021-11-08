@@ -30,6 +30,9 @@
  * \warning
  */
 
+#ifndef __ENB_APP_ENB_PARAMDEF_EMTC__H__
+#define __ENB_APP_ENB_PARAMDEF_EMTC__H__
+
 #include "common/config/config_paramdesc.h"
 #include "RRC_paramsvalues.h"
 
@@ -258,93 +261,93 @@ typedef struct ccparams_eMTC_s {
  }
 
 #define EMTCPARAMS_CHECK                 {                                     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
              { .s1a= { config_check_modify_integer, UETIMER_T300_OKVALUES, UETIMER_T300_MODVALUES,8}} ,						     \
              { .s1a= { config_check_modify_integer, UETIMER_T301_OKVALUES, UETIMER_T301_MODVALUES,8}} ,						     \
              { .s1a= { config_check_modify_integer, UETIMER_T310_OKVALUES, UETIMER_T310_MODVALUES,7}} ,						     \
              { .s1a= { config_check_modify_integer, UETIMER_T311_OKVALUES, UETIMER_T311_MODVALUES,7}} ,						     \
              { .s1a= { config_check_modify_integer, UETIMER_N310_OKVALUES, UETIMER_N310_MODVALUES,8}} , 					      \
              { .s1a= { config_check_modify_integer, UETIMER_N311_OKVALUES, UETIMER_N311_MODVALUES,8}} , 					      \
-             { .s5= {NULL }} ,						     \
-             { .s5= {NULL }} ,						     \
-                          { .s5= {NULL }} ,						     \
-                          { .s5= {NULL }} ,						     \
-                          { .s5= {NULL }} ,						     \
-                          { .s5= {NULL }} ,						     \
-                          { .s5= {NULL }} ,						     \
-                          { .s5= {NULL }} ,						     \
-                          { .s5= {NULL }} ,						     \
-                          { .s5= {NULL }} ,						     \
-                          { .s5= {NULL }} ,						     \
-                          { .s5= {NULL }} ,						     \
-                          { .s5= {NULL }} ,						     \
-                          { .s5= {NULL }} ,						     \
-                          { .s5= {NULL }} ,						     \
-                          { .s5= {NULL }} ,						     \
-                          { .s5= {NULL }} ,						     \
-                          { .s5= {NULL }} ,						     \
-                          { .s5= {NULL }} ,						     \
-                          { .s5= {NULL }} ,						     \
-                          { .s5= {NULL }} ,						     \
-                          { .s5= {NULL }} ,						     \
-                          { .s5= {NULL }} ,						     \
-                          { .s5= {NULL }} ,						     \
-                          { .s5= {NULL }} ,						     \
-                          { .s5= {NULL }} ,						     \
-                          { .s5= {NULL }} ,						     \
-                          { .s5= {NULL }} ,						     \
-                          { .s5= {NULL }} ,						     \
-                          { .s5= {NULL }} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
+             { {NULL}} ,						     \
 }
 
 #define SYSTEM_INFO_VALUE_TAG_SI_DESC(eMTCconfig) {			\
@@ -405,3 +408,5 @@ typedef struct ccparams_eMTC_s {
 {"sib2_interval_ULHoppingConfigCommonModeB_r13_val",                 NULL,   0,           iptr:&eMTCconfig->sib2_interval_ULHoppingConfigCommonModeB_r13_val,   defintval:0,            TYPE_UINT,       0}, \
 {"sib2_mpdcch_pdsch_hoppingOffset_r13",                              NULL,   0,           iptr:&eMTCconfig->sib2_mpdcch_pdsch_hoppingOffset_r13,                defintval:1,             TYPE_UINT,         0} \
 }
+
+#endif

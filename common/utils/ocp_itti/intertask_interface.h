@@ -1,7 +1,26 @@
 /*
-  Author: Laurent THOMAS, Open Cells
-  Copyleft: OpenAirInterface software alliance and it's licence
+* Licensed to the OpenAirInterface (OAI) Software Alliance under one or more
+* contributor license agreements.  See the NOTICE file distributed with
+* this work for additional information regarding copyright ownership.
+* The OpenAirInterface Software Alliance licenses this file to You under
+* the OAI Public License, Version 1.1  (the "License"); you may not use this file
+* except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*      http://www.openairinterface.org/?page_id=698
+*
+* Author and copyright: Laurent Thomas, open-cells.com
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*-------------------------------------------------------------------------------
+* For more information about the OpenAirInterface (OAI) Software Alliance:
+*      contact@openairinterface.org
 */
+
 #ifndef INTERTASK_INTERFACE_H_
 #define INTERTASK_INTERFACE_H_
 #include <stdint.h>
@@ -25,15 +44,15 @@ typedef struct {
 typedef struct {
   uint32_t      interval_sec;
   uint32_t      interval_us;
-  long     task_id;
-  int32_t       instance;
+  long          task_id;
+  instance_t       instance;
   timer_type_t  type;
   void         *timer_arg;
   long          timer_id;
 } timer_create_t;
 
 typedef struct {
-  long     task_id;
+  long          task_id;
   long          timer_id;
 } timer_delete_t;
 
@@ -211,6 +230,7 @@ typedef struct IttiMsgText_s {
 #include <openair2/COMMON/sctp_messages_types.h>
 #include <openair2/COMMON/udp_messages_types.h>
 #include <openair2/COMMON/gtpv1_u_messages_types.h>
+#include <openair2/COMMON/ngap_messages_types.h>
 #include <openair3/SCTP/sctp_eNB_task.h>
 #include <openair3/NAS/UE/nas_proc_defs.h>
 #include <openair3/NAS/UE/ESM/esmData.h>
@@ -237,9 +257,14 @@ typedef struct IttiMsgText_s {
 //#include <proto.h>
 
 #include <openair3/GTPV1-U/gtpv1u_eNB_task.h>
+#include <openair3/GTPV1-U/gtpv1u_gNB_task.h>
 void *rrc_enb_process_itti_msg(void *);
 #include <openair3/SCTP/sctp_eNB_task.h>
-#include <openair3/S1AP/s1ap_eNB.h>
+#include <openair3/NGAP/ngap_gNB.h>
+
+#ifdef ITTI_SIM
+  #include <openair2/COMMON/itti_sim_messages_types.h>
+#endif
 
 /*
   static const char *const messages_definition_xml = {
@@ -275,7 +300,7 @@ typedef struct {
 //TASK_DEF(TASK_RRC_ENB,  TASK_PRIORITY_MED,  200, NULL, NULL)
 //TASK_DEF(TASK_GTPV1_U,  TASK_PRIORITY_MED,  1000,NULL, NULL)
 //TASK_DEF(TASK_UDP,      TASK_PRIORITY_MED,  1000, NULL, NULL)
-
+void *rrc_enb_process_msg(void *);
 #define FOREACH_TASK(TASK_DEF) \
   TASK_DEF(TASK_UNKNOWN,  TASK_PRIORITY_MED, 50, NULL, NULL)  \
   TASK_DEF(TASK_TIMER,    TASK_PRIORITY_MED, 10, NULL, NULL)   \
@@ -289,8 +314,10 @@ typedef struct {
   TASK_DEF(TASK_DATA_FORWARDING, TASK_PRIORITY_MED, 200, NULL, NULL)   \
   TASK_DEF(TASK_END_MARKER, TASK_PRIORITY_MED, 200, NULL, NULL)   \
   TASK_DEF(TASK_RRC_ENB,  TASK_PRIORITY_MED,  200, NULL,NULL)\
+  TASK_DEF(TASK_RRC_GNB,  TASK_PRIORITY_MED,  200, NULL,NULL)\
   TASK_DEF(TASK_RAL_ENB,  TASK_PRIORITY_MED,  200, NULL, NULL)  \
   TASK_DEF(TASK_S1AP,     TASK_PRIORITY_MED,  200, NULL, NULL)  \
+  TASK_DEF(TASK_NGAP,     TASK_PRIORITY_MED,  200, NULL, NULL)  \
   TASK_DEF(TASK_X2AP,     TASK_PRIORITY_MED,  200, NULL, NULL)  \
   TASK_DEF(TASK_M2AP_ENB,     TASK_PRIORITY_MED,  200, NULL, NULL)  \
   TASK_DEF(TASK_M2AP_MCE,     TASK_PRIORITY_MED,  200, NULL, NULL)  \
@@ -299,6 +326,7 @@ typedef struct {
   TASK_DEF(TASK_M3AP_MCE,     TASK_PRIORITY_MED,  200, NULL, NULL)  \
   TASK_DEF(TASK_SCTP,     TASK_PRIORITY_MED,  200, NULL, NULL)  \
   TASK_DEF(TASK_ENB_APP,  TASK_PRIORITY_MED,  200, NULL, NULL)  \
+  TASK_DEF(TASK_GNB_APP,  TASK_PRIORITY_MED,  200, NULL, NULL)  \
   TASK_DEF(TASK_MCE_APP,  TASK_PRIORITY_MED,  200, NULL, NULL)  \
   TASK_DEF(TASK_MME_APP,  TASK_PRIORITY_MED,  200, NULL, NULL)  \
   TASK_DEF(TASK_FLEXRAN_AGENT,TASK_PRIORITY_MED, 200, NULL, NULL) \
@@ -307,6 +335,7 @@ typedef struct {
   TASK_DEF(TASK_RLC_UE,   TASK_PRIORITY_MED,  200, NULL, NULL)  \
   TASK_DEF(TASK_PDCP_UE,  TASK_PRIORITY_MED,  200, NULL, NULL)  \
   TASK_DEF(TASK_RRC_UE,   TASK_PRIORITY_MED,  200, NULL, NULL)  \
+  TASK_DEF(TASK_RRC_NRUE, TASK_PRIORITY_MED,  200, NULL, NULL)  \
   TASK_DEF(TASK_NAS_UE,   TASK_PRIORITY_MED,  200, NULL, NULL)  \
   TASK_DEF(TASK_RAL_UE,   TASK_PRIORITY_MED,  200, NULL, NULL)  \
   TASK_DEF(TASK_MSC,      TASK_PRIORITY_MED,  200, NULL, NULL)\
@@ -314,6 +343,8 @@ typedef struct {
   TASK_DEF(TASK_UDP,      TASK_PRIORITY_MED,  1000, NULL, NULL)\
   TASK_DEF(TASK_CU_F1,    TASK_PRIORITY_MED,  200, NULL, NULL) \
   TASK_DEF(TASK_DU_F1,    TASK_PRIORITY_MED,  200, NULL, NULL) \
+  TASK_DEF(TASK_RRC_UE_SIM,   TASK_PRIORITY_MED,  200, NULL, NULL)  \
+  TASK_DEF(TASK_RRC_GNB_SIM,  TASK_PRIORITY_MED,  200, NULL, NULL)  \
   TASK_DEF(TASK_MAX,      TASK_PRIORITY_MED,  200, NULL, NULL)
 
 #define TASK_DEF(TaskID, pRIO, qUEUEsIZE, FuNc, ThreadFunc)          { pRIO, qUEUEsIZE, #TaskID, FuNc, ThreadFunc },
@@ -371,7 +402,8 @@ typedef struct MessageHeader_s {
   MessagesIds messageId;          /**< Unique message id as referenced in enum MessagesIds */
   task_id_t  originTaskId;        /**< ID of the sender task */
   task_id_t  destinationTaskId;   /**< ID of the destination task */
-  instance_t instance;            /**< Task instance for virtualization */
+  instance_t originInstance;
+  instance_t destinationInstance;
   itti_lte_time_t lte_time;
   MessageHeaderSize ittiMsgSize;         /**< Message size (not including header size) */
 } MessageHeader;
@@ -393,7 +425,7 @@ static const message_info_t messages_info[] = {
 #undef MESSAGE_DEF
 };
 
-typedef struct __attribute__ ((__packed__)) MessageDef_s {
+typedef struct MessageDef_s {
   MessageHeader ittiMsgHeader; /**< Message header */
   msg_t         ittiMsg;
 } MessageDef;
@@ -401,21 +433,17 @@ typedef struct __attribute__ ((__packed__)) MessageDef_s {
 
 
 /* Extract the instance from a message */
-#define ITTI_MESSAGE_GET_INSTANCE(mESSAGE)  ((mESSAGE)->ittiMsgHeader.instance)
 #define ITTI_MSG_ID(mSGpTR)                 ((mSGpTR)->ittiMsgHeader.messageId)
 #define ITTI_MSG_ORIGIN_ID(mSGpTR)          ((mSGpTR)->ittiMsgHeader.originTaskId)
 #define ITTI_MSG_DESTINATION_ID(mSGpTR)     ((mSGpTR)->ittiMsgHeader.destinationTaskId)
-#define ITTI_MSG_INSTANCE(mSGpTR)           ((mSGpTR)->ittiMsgHeader.instance)
+#define ITTI_MSG_ORIGIN_INSTANCE(mSGpTR)           ((mSGpTR)->ittiMsgHeader.originInstance)
+#define ITTI_MSG_DESTINATION_INSTANCE(mSGpTR)           ((mSGpTR)->ittiMsgHeader.destinationInstance)
 #define ITTI_MSG_NAME(mSGpTR)               itti_get_message_name(ITTI_MSG_ID(mSGpTR))
 #define ITTI_MSG_ORIGIN_NAME(mSGpTR)        itti_get_task_name(ITTI_MSG_ORIGIN_ID(mSGpTR))
 #define ITTI_MSG_DESTINATION_NAME(mSGpTR)   itti_get_task_name(ITTI_MSG_DESTINATION_ID(mSGpTR))
 #define TIMER_HAS_EXPIRED(mSGpTR)           (mSGpTR)->ittiMsg.timer_has_expired
 
 #define INSTANCE_DEFAULT    (UINT16_MAX - 1)
-
-static inline int64_t clock_difftime_ns(struct timespec start, struct timespec end) {
-  return (int64_t)( end.tv_sec-start.tv_sec) * (int64_t)(1000*1000*1000) + end.tv_nsec-start.tv_nsec;
-}
 
 #ifdef __cplusplus
 extern "C" {
@@ -472,6 +500,8 @@ int itti_create_task(task_id_t task_id,
                      void *(*start_routine) (void *),
                      void *args_p);
 
+int itti_create_queue(const task_info_t *task_info);
+
 /** \brief Exit the current task.
  **/
 void itti_exit_task(void);
@@ -502,6 +532,7 @@ const char *itti_get_task_name(task_id_t task_id);
  **/
 MessageDef *itti_alloc_new_message(
   task_id_t         origin_task_id,
+  instance_t originInstance,
   MessagesIds       message_id);
 
 /** \brief Alloc and memset(0) a new itti message.
@@ -512,6 +543,7 @@ MessageDef *itti_alloc_new_message(
  **/
 MessageDef *itti_alloc_new_message_sized(
   task_id_t         origin_task_id,
+  instance_t originInstance,
   MessagesIds       message_id,
   MessageHeaderSize size);
 
@@ -519,7 +551,7 @@ MessageDef *itti_alloc_new_message_sized(
    This function should be called from the main thread after having created all ITTI tasks.
  **/
 void itti_wait_tasks_end(void);
-#define  THREAD_MAX 0 //for compatibility
+#define  ADDED_QUEUES_MAX 10 // Fix me: MSC component too hard to understand, we keep room for 10 queues created dynamically
 void itti_set_task_real_time(task_id_t task_id);
 
 /** \brief Send a termination message to all tasks.
@@ -533,13 +565,12 @@ void *malloc_or_fail(size_t size);
 int memory_read(const char *datafile, void *data, size_t size);
 int itti_free(task_id_t task_id, void *ptr);
 
-int itti_init(task_id_t task_max, thread_id_t thread_max, MessagesIds messages_id_max, const task_info_t *tasks_info,
-              const message_info_t *messages_info);
+int itti_init(task_id_t task_max, const task_info_t *tasks_info);
 int timer_setup(
   uint32_t      interval_sec,
   uint32_t      interval_us,
   task_id_t     task_id,
-  int32_t       instance,
+  instance_t       instance,
   timer_type_t  type,
   void         *timer_arg,
   long         *timer_id);
@@ -548,6 +579,7 @@ int timer_setup(
 int timer_remove(long timer_id);
 #define timer_stop timer_remove
 int signal_handle(int *end);
+int signal_mask(void);
 
 #ifdef __cplusplus
 }

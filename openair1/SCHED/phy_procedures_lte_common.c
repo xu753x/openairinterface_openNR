@@ -752,9 +752,9 @@ int subframe_num(LTE_DL_FRAME_PARMS *frame_parms){
     }
 }
 
-lte_subframe_t subframe_select(LTE_DL_FRAME_PARMS *frame_parms,unsigned char subframe)
+lte_subframe_t subframe_select(LTE_DL_FRAME_PARMS *frame_parms,
+		                       unsigned char subframe)
 {
-
   // if FDD return dummy value
   if (frame_parms->frame_type == FDD)
     return(SF_DL);
@@ -820,6 +820,7 @@ lte_subframe_t subframe_select(LTE_DL_FRAME_PARMS *frame_parms,unsigned char sub
     break;
 
   default:
+
     AssertFatal(1==0,"subframe %d Unsupported TDD configuration %d\n",subframe,frame_parms->tdd_config);
     return(255);
 
@@ -1145,7 +1146,7 @@ int16_t estimate_ue_tx_power(uint32_t tbs, uint32_t nb_rb, uint8_t control_only,
   //(beta_offset_pusch_x8=ue->ulsch[eNB_id]->harq_processes[harq_pid]->control_only == 1) ? ue->ulsch[eNB_id]->beta_offset_cqi_times8:8;
 
   // if deltamcs_enabledm
-  delta_mcs = ((hundred_times_delta_TF[MPR_x100/6]+10*dB_fixed_times10((beta_offset_pusch_x8)>>3))/100.0);
+  delta_mcs = ((hundred_times_delta_TF[MPR_x100/6]+10*dB_fixed_x10((beta_offset_pusch_x8)>>3))/100.0);
   bw_factor = (hundred_times_log10_NPRB[nb_rb-1]/100.0);
 #ifdef DEBUG_SEGMENTATION
   printf("estimated ue tx power %d (num_re %d, sumKr %d, mpr_x100 %d, delta_mcs %f, bw_factor %f)\n",

@@ -104,6 +104,11 @@ int s1ap_eNB_handle_s1_path_switch_request_failure(uint32_t               assoc_
     uint32_t               stream,
     S1AP_S1AP_PDU_t       *pdu);
 
+static
+int s1ap_eNB_handle_s1_ENDC_e_rab_modification_confirm(uint32_t               assoc_id,
+    uint32_t               stream,
+    S1AP_S1AP_PDU_t       *pdu);
+
 /* Handlers matrix. Only eNB related procedure present here */
 s1ap_message_decoded_callback messages_callback[][3] = {
   { 0, 0, 0 }, /* HandoverPreparation */
@@ -149,13 +154,14 @@ s1ap_message_decoded_callback messages_callback[][3] = {
   { 0, 0, 0 }, /* eNBConfigurationTransfer */
   { 0, 0, 0 }, /* MMEConfigurationTransfer */
   { 0, 0, 0 }, /* CellTrafficTrace */
-#if (S1AP_VERSION >= MAKE_VERSION(9, 0, 0))
   { 0, 0, 0 }, /* Kill */
   { 0, 0, 0 }, /* DownlinkUEAssociatedLPPaTransport  */
   { 0, 0, 0 }, /* UplinkUEAssociatedLPPaTransport */
   { 0, 0, 0 }, /* DownlinkNonUEAssociatedLPPaTransport */
   { 0, 0, 0 }, /* UplinkNonUEAssociatedLPPaTransport */
-#endif /* #if (S1AP_VERSION >= MAKE_VERSION(9, 0, 0)) */
+  { 0, 0, 0 }, /* UERadioCapabilityMatch */
+  { 0, 0, 0 }, /* PWSRestartIndication */
+  { 0, s1ap_eNB_handle_s1_ENDC_e_rab_modification_confirm, 0 }, /* E_RABModificationIndication */
 };
 char *s1ap_direction2String(int s1ap_dir) {
   static char *s1ap_direction_String[] = {
@@ -182,7 +188,7 @@ void s1ap_handle_s1_setup_message(s1ap_eNB_mme_data_t *mme_desc_p, int sctp_shut
       /* If there are no more associated MME, inform eNB app */
       if (mme_desc_p->s1ap_eNB_instance->s1ap_mme_associated_nb == 0) {
         MessageDef                 *message_p;
-        message_p = itti_alloc_new_message(TASK_S1AP, S1AP_DEREGISTERED_ENB_IND);
+        message_p = itti_alloc_new_message(TASK_S1AP, 0, S1AP_DEREGISTERED_ENB_IND);
         S1AP_DEREGISTERED_ENB_IND(message_p).nb_mme = 0;
         itti_send_msg_to_task(TASK_ENB_APP, mme_desc_p->s1ap_eNB_instance->instance, message_p);
       }
@@ -200,7 +206,7 @@ void s1ap_handle_s1_setup_message(s1ap_eNB_mme_data_t *mme_desc_p, int sctp_shut
     /* If there are no more pending messages, inform eNB app */
     if (mme_desc_p->s1ap_eNB_instance->s1ap_mme_pending_nb == 0) {
       MessageDef                 *message_p;
-      message_p = itti_alloc_new_message(TASK_S1AP, S1AP_REGISTER_ENB_CNF);
+      message_p = itti_alloc_new_message(TASK_S1AP, 0, S1AP_REGISTER_ENB_CNF);
       S1AP_REGISTER_ENB_CNF(message_p).nb_mme = mme_desc_p->s1ap_eNB_instance->s1ap_mme_associated_nb;
       itti_send_msg_to_task(TASK_ENB_APP, mme_desc_p->s1ap_eNB_instance->instance, message_p);
     }
@@ -592,12 +598,9 @@ int s1ap_eNB_handle_error_indication(uint32_t         assoc_id,
           case S1AP_CauseRadioNetwork_not_supported_QCI_value:
             S1AP_WARN("Received S1 Error indication S1AP_CauseRadioNetwork_not_supported_QCI_value\n");
             break;
-#if (S1AP_VERSION >= MAKE_VERSION(9, 0, 0))
-
           case S1AP_CauseRadioNetwork_invalid_CSG_Id:
             S1AP_WARN("Received S1 Error indication S1AP_CauseRadioNetwork_invals1ap_id_CSG_Id\n");
             break;
-#endif /* #if (S1AP_VERSION >= MAKE_VERSION(9, 0, 0)) */
 
           default:
             S1AP_WARN("Received S1 Error indication cause radio network case not handled\n");
@@ -638,12 +641,9 @@ int s1ap_eNB_handle_error_indication(uint32_t         assoc_id,
           case S1AP_CauseNas_unspecified:
             S1AP_WARN("Received S1 Error indication S1AP_CauseNas_unspecified\n");
             break;
-#if (S1AP_VERSION >= MAKE_VERSION(9, 0, 0))
-
           case S1AP_CauseNas_csg_subscription_expiry:
             S1AP_WARN("Received S1 Error indication S1AP_CauseNas_csg_subscription_expiry\n");
             break;
-#endif /* #if (S1AP_VERSION >= MAKE_VERSION(9, 0, 0)) */
 
           default:
             S1AP_WARN("Received S1 Error indication cause nas case not handled\n");
@@ -791,7 +791,7 @@ int s1ap_eNB_handle_initial_context_request(uint32_t   assoc_id,
 
   ue_desc_p->rx_stream = stream;
   ue_desc_p->mme_ue_s1ap_id = mme_ue_s1ap_id;
-  message_p        = itti_alloc_new_message(TASK_S1AP, S1AP_INITIAL_CONTEXT_SETUP_REQ);
+  message_p        = itti_alloc_new_message(TASK_S1AP, 0, S1AP_INITIAL_CONTEXT_SETUP_REQ);
   S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).ue_initial_id  = ue_desc_p->ue_initial_id;
   ue_desc_p->ue_initial_id = 0;
   S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).eNB_ue_s1ap_id = ue_desc_p->eNB_ue_s1ap_id;
@@ -864,21 +864,35 @@ int s1ap_eNB_handle_initial_context_request(uint32_t   assoc_id,
       BIT_STRING_to_uint16(&ie->value.choice.UESecurityCapabilities.encryptionAlgorithms);
     S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).security_capabilities.integrity_algorithms =
       BIT_STRING_to_uint16(&ie->value.choice.UESecurityCapabilities.integrityProtectionAlgorithms);
-    /* id-SecurityKey : Copy the security key */
   } else {/* ie != NULL */
     return -1;
   }
 
+  /* id-SecurityKey : Copy the security key */
   S1AP_FIND_PROTOCOLIE_BY_ID(S1AP_InitialContextSetupRequestIEs_t, ie, container,
                              S1AP_ProtocolIE_ID_id_SecurityKey, true);
 
   if (ie != NULL) { /* checked by macro but cppcheck doesn't see it */
     memcpy(&S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).security_key,
            ie->value.choice.SecurityKey.buf, ie->value.choice.SecurityKey.size);
-    itti_send_msg_to_task(TASK_RRC_ENB, ue_desc_p->eNB_instance->instance, message_p);
   } else {/* ie != NULL */
     return -1;
   }
+
+  /* id-NRUESecurityCapabilities */
+  S1AP_FIND_PROTOCOLIE_BY_ID(S1AP_InitialContextSetupRequestIEs_t, ie, container,
+                             S1AP_ProtocolIE_ID_id_NRUESecurityCapabilities, false);
+  if (ie != NULL) {
+    S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).nr_security_capabilities.encryption_algorithms =
+      BIT_STRING_to_uint16(&ie->value.choice.NRUESecurityCapabilities.nRencryptionAlgorithms);
+    S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).nr_security_capabilities.integrity_algorithms =
+      BIT_STRING_to_uint16(&ie->value.choice.NRUESecurityCapabilities.nRintegrityProtectionAlgorithms);
+  } else {
+    S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).nr_security_capabilities.encryption_algorithms = 0;
+    S1AP_INITIAL_CONTEXT_SETUP_REQ(message_p).nr_security_capabilities.integrity_algorithms = 0;
+  }
+
+  itti_send_msg_to_task(TASK_RRC_ENB, ue_desc_p->eNB_instance->instance, message_p);
 
   return 0;
 }
@@ -935,7 +949,7 @@ int s1ap_eNB_handle_ue_context_release_command(uint32_t   assoc_id,
             NULL,0,
             "0 S1AP_UE_CONTEXT_RELEASE_COMMAND/%d eNB_ue_s1ap_id "S1AP_UE_ID_FMT" ",
             enb_ue_s1ap_id);
-          message_p    = itti_alloc_new_message(TASK_S1AP, S1AP_UE_CONTEXT_RELEASE_COMMAND);
+          message_p    = itti_alloc_new_message(TASK_S1AP, 0, S1AP_UE_CONTEXT_RELEASE_COMMAND);
 
           if (ue_desc_p->mme_ue_s1ap_id == 0) { // case of Detach Request and switch off from RRC_IDLE mode
             ue_desc_p->mme_ue_s1ap_id = mme_ue_s1ap_id;
@@ -1032,7 +1046,7 @@ int s1ap_eNB_handle_e_rab_setup_request(uint32_t         assoc_id,
               ue_desc_p->mme_ue_s1ap_id, mme_ue_s1ap_id);
   }
 
-  message_p        = itti_alloc_new_message(TASK_S1AP, S1AP_E_RAB_SETUP_REQ);
+  message_p        = itti_alloc_new_message(TASK_S1AP, 0, S1AP_E_RAB_SETUP_REQ);
   S1AP_E_RAB_SETUP_REQ(message_p).ue_initial_id  = ue_desc_p->ue_initial_id;
   S1AP_E_RAB_SETUP_REQ(message_p).mme_ue_s1ap_id  = mme_ue_s1ap_id;
   S1AP_E_RAB_SETUP_REQ(message_p).eNB_ue_s1ap_id  = enb_ue_s1ap_id;
@@ -1126,7 +1140,7 @@ int s1ap_eNB_handle_paging(uint32_t               assoc_id,
     return -1;
   }
 
-  message_p = itti_alloc_new_message(TASK_S1AP, S1AP_PAGING_IND);
+  message_p = itti_alloc_new_message(TASK_S1AP, 0, S1AP_PAGING_IND);
   /* convert S1AP_PagingIEs_t to s1ap_paging_ind_t */
   /* id-UEIdentityIndexValue : convert UE Identity Index value */
   S1AP_FIND_PROTOCOLIE_BY_ID(S1AP_PagingIEs_t, ie, container,
@@ -1322,7 +1336,7 @@ int s1ap_eNB_handle_e_rab_modify_request(uint32_t               assoc_id,
   if (ue_desc_p->mme_ue_s1ap_id != mme_ue_s1ap_id) {
     S1AP_WARN("UE context mme_ue_s1ap_id is different form that of the message (%d != %ld)",
               ue_desc_p->mme_ue_s1ap_id, mme_ue_s1ap_id);
-    message_p = itti_alloc_new_message (TASK_RRC_ENB, S1AP_E_RAB_MODIFY_RESP);
+    message_p = itti_alloc_new_message (TASK_RRC_ENB, 0, S1AP_E_RAB_MODIFY_RESP);
     S1AP_E_RAB_MODIFY_RESP (message_p).eNB_ue_s1ap_id = enb_ue_s1ap_id;
     S1AP_FIND_PROTOCOLIE_BY_ID(S1AP_E_RABModifyRequestIEs_t, ie, container,
                                S1AP_ProtocolIE_ID_id_E_RABToBeModifiedListBearerModReq, true);
@@ -1348,7 +1362,7 @@ int s1ap_eNB_handle_e_rab_modify_request(uint32_t               assoc_id,
     return -1;
   }
 
-  message_p        = itti_alloc_new_message(TASK_S1AP, S1AP_E_RAB_MODIFY_REQ);
+  message_p        = itti_alloc_new_message(TASK_S1AP, 0, S1AP_E_RAB_MODIFY_REQ);
   S1AP_E_RAB_MODIFY_REQ(message_p).ue_initial_id  = ue_desc_p->ue_initial_id;
   S1AP_E_RAB_MODIFY_REQ(message_p).mme_ue_s1ap_id  = mme_ue_s1ap_id;
   S1AP_E_RAB_MODIFY_REQ(message_p).eNB_ue_s1ap_id  = enb_ue_s1ap_id;
@@ -1415,6 +1429,7 @@ int s1ap_eNB_handle_e_rab_release_command(uint32_t               assoc_id,
     return -1;
   }
 
+
   /* id-MME-UE-S1AP-ID */
   S1AP_FIND_PROTOCOLIE_BY_ID(S1AP_E_RABReleaseCommandIEs_t, ie, container,
                              S1AP_ProtocolIE_ID_id_MME_UE_S1AP_ID, true);
@@ -1458,7 +1473,7 @@ int s1ap_eNB_handle_e_rab_release_command(uint32_t               assoc_id,
 
   S1AP_DEBUG("[SCTP %d] Received E-RAB release command for eNB_UE_S1AP_ID %ld mme_ue_s1ap_id %ld\n",
              assoc_id, enb_ue_s1ap_id, mme_ue_s1ap_id);
-  message_p = itti_alloc_new_message(TASK_S1AP, S1AP_E_RAB_RELEASE_COMMAND);
+  message_p = itti_alloc_new_message(TASK_S1AP, 0, S1AP_E_RAB_RELEASE_COMMAND);
   S1AP_E_RAB_RELEASE_COMMAND(message_p).eNB_ue_s1ap_id = enb_ue_s1ap_id;
   S1AP_E_RAB_RELEASE_COMMAND(message_p).mme_ue_s1ap_id = mme_ue_s1ap_id;
   /* id-NAS-PDU */
@@ -1528,7 +1543,7 @@ int s1ap_eNB_handle_s1_path_switch_request_ack(uint32_t               assoc_id,
   }
 
   // send a message to RRC
-  message_p        = itti_alloc_new_message(TASK_S1AP, S1AP_PATH_SWITCH_REQ_ACK);
+  message_p        = itti_alloc_new_message(TASK_S1AP, 0, S1AP_PATH_SWITCH_REQ_ACK);
   /* mandatory */
   S1AP_FIND_PROTOCOLIE_BY_ID(S1AP_PathSwitchRequestAcknowledgeIEs_t, ie, pathSwitchRequestAcknowledge,
                              S1AP_ProtocolIE_ID_id_eNB_UE_S1AP_ID, true);
@@ -1729,3 +1744,13 @@ int s1ap_eNB_handle_s1_path_switch_request_failure(uint32_t               assoc_
   // TODO continue
   return 0;
 }
+
+static
+int s1ap_eNB_handle_s1_ENDC_e_rab_modification_confirm(uint32_t               assoc_id,
+    uint32_t               stream,
+    S1AP_S1AP_PDU_t       *pdu){
+
+	LOG_I(S1AP, "Received S1AP E-RAB Modification confirm message \n");
+	return 0;
+}
+
