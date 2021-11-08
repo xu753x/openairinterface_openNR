@@ -178,7 +178,11 @@ int trx_lms_start(openair0_device *device){
     }
 
     LMS_Init(lms_device);
+<<<<<<< HEAD
     LMS_EnableCache(lms_device,false);
+=======
+    ///LMS_EnableCache(lms_device,false);
+>>>>>>> 2ec147a437cf42542efa3cc569dd04d20126dedf
 
     if (LMS_LoadConfig(lms_device,device->openair0_cfg[0].configFilename) != 0)
     {
@@ -366,6 +370,11 @@ int device_init(openair0_device *device, openair0_config_t *openair0_cfg){
   printf("LMSSDR: Initializing openair0_device for %s ...\n", ((device->host_type == RAU_HOST) ? "RAU": "RRU"));
 
   switch ((int)openair0_cfg[0].sample_rate) {
+  case 61440000:
+    openair0_cfg[0].samples_per_packet    = 2048;
+    openair0_cfg[0].tx_sample_advance     = 40;
+    openair0_cfg[0].tx_bw                 = 61.44e6;
+    openair0_cfg[0].rx_bw                 = 61.44e6;
   case 30720000:
     // from usrp_time_offset
     openair0_cfg[0].samples_per_packet    = 2048;
